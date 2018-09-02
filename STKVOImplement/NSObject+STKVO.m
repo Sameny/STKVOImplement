@@ -37,21 +37,6 @@ NSString *const kSTKVOObservers = @"STKVOObservers";
 
 @end
 
-// 获取Class的方法名称(selector)
-static NSArray * getMenthodNames(Class c) {
-    NSMutableArray *names = [[NSMutableArray alloc] init];
-    
-    unsigned int methodCount = 0;
-    Method *methods = class_copyMethodList(c, &methodCount);
-    
-    for (unsigned int i = 0; i < methodCount; i++) {
-        SEL sel = method_getName(methods[i]);
-        [names addObject:NSStringFromSelector(sel)];
-    }
-    free(methods);
-    return names;
-}
-
 // 构造setter的方法名
 static NSString * getSetterSelector(NSString *key) {
     if (key.length <= 0) {
@@ -68,11 +53,9 @@ static NSString * getGetterSelector(NSString *setter) {
         return nil;
     }
     
-    // remove 'set' at the begining and ':' at the end
     NSRange range = NSMakeRange(3, setter.length - 4);
     NSString *key = [setter substringWithRange:range];
     
-    // lower case the first letter
     NSString *firstLetter = [[key substringToIndex:1] lowercaseString];
     key = [key stringByReplacingCharactersInRange:NSMakeRange(0, 1)
                                        withString:firstLetter];
@@ -102,7 +85,7 @@ static void st_kvo_setter(id self, SEL _cmd, id newValue) {
     /*
      * These functions must be cast to an appropriate function pointer type
      * before being called.
-     * 该函数需要映射到一个函数指针，而且起参数个数也是看需要而定，我们这里有3个参数，一个消息的接受者superclass，所调用的方法setter，参数是newValue
+     * 该函数需要映射到一个函数指针，而且其参数个数也是看需要而定，我们这里有3个参数，一个消息的接受者superclass，所调用的方法setter，参数是newValue
      */
     // 哈哈，这个像定义Block块一样，是不是？
     void(*st_objc_msgSendSuperCasted)(void*, SEL, id) = (void *)objc_msgSendSuper;
